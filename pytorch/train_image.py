@@ -17,7 +17,7 @@ from torch.autograd import Variable
 import random
 import pdb
 import math
-
+from tqdm import tqdm
 
 def image_classification_test(loader, model, test_10crop=True):
     start_test = True
@@ -25,7 +25,7 @@ def image_classification_test(loader, model, test_10crop=True):
         if test_10crop:
             iter_test = [iter(loader['test'][i]) for i in range(10)]
             for i in range(len(loader['test'][0])):
-                data = [iter_test[j].next() for j in range(10)]
+                data = [next(iter_test[j]) for j in range(10)]
                 inputs = [data[j][0] for j in range(10)]
                 labels = data[0][1]
                 for j in range(10):
@@ -46,7 +46,7 @@ def image_classification_test(loader, model, test_10crop=True):
         else:
             iter_test = iter(loader["test"])
             for i in range(len(loader['test'])):
-                data = iter_test.next()
+                data = next(iter_test)
                 inputs = data[0]
                 labels = data[1]
                 inputs = inputs.cuda()
@@ -142,7 +142,7 @@ def train(config):
     len_train_target = len(dset_loaders["target"])
     transfer_loss_value = classifier_loss_value = total_loss_value = 0.0
     best_acc = 0.0
-    for i in range(config["num_iterations"]):
+    for i in tqdm(range(config["num_iterations"])):
         if i % config["test_interval"] == config["test_interval"] - 1:
             base_network.train(False)
             temp_acc = image_classification_test(dset_loaders, \
@@ -169,19 +169,21 @@ def train(config):
             iter_source = iter(dset_loaders["source"])
         if i % len_train_target == 0:
             iter_target = iter(dset_loaders["target"])
-        inputs_source, labels_source = iter_source.next()
-        inputs_target, labels_target = iter_target.next()
+        inputs_source, labels_source, domain_source = next(iter_source)
+        inputs_target, labels_target, domain_target = next(iter_target)
         inputs_source, inputs_target, labels_source = inputs_source.cuda(), inputs_target.cuda(), labels_source.cuda()
+        domain_source, domain_target = domain_source.cuda(), domain_target.cuda()
         features_source, outputs_source = base_network(inputs_source)
         features_target, outputs_target = base_network(inputs_target)
         features = torch.cat((features_source, features_target), dim=0)
         outputs = torch.cat((outputs_source, outputs_target), dim=0)
+        domain_labels = torch.cat((domain_source, domain_target), dim=0)
         softmax_out = nn.Softmax(dim=1)(outputs)
         if config['method'] == 'CDAN+E':           
             entropy = loss.Entropy(softmax_out)
-            transfer_loss = loss.CDAN([features, softmax_out], ad_net, entropy, network.calc_coeff(i), random_layer)
+            transfer_loss = loss.CDAN([features, softmax_out, domain_labels], ad_net, entropy, network.calc_coeff(i), random_layer)
         elif config['method']  == 'CDAN':
-            transfer_loss = loss.CDAN([features, softmax_out], ad_net, None, None, random_layer)
+            transfer_loss = loss.CDAN([features, softmax_out, domain_labels], ad_net, None, None, random_layer)
         elif config['method']  == 'DANN':
             transfer_loss = loss.DANN(features, ad_net)
         else:
@@ -199,16 +201,37 @@ if __name__ == "__main__":
     parser.add_argument('--gpu_id', type=str, nargs='?', default='0', help="device id to run")
     parser.add_argument('--net', type=str, default='ResNet50', choices=["ResNet18", "ResNet34", "ResNet50", "ResNet101", "ResNet152", "VGG11", "VGG13", "VGG16", "VGG19", "VGG11BN", "VGG13BN", "VGG16BN", "VGG19BN", "AlexNet"])
     parser.add_argument('--dset', type=str, default='office', choices=['office', 'image-clef', 'visda', 'office-home'], help="The dataset or source dataset used")
-    parser.add_argument('--s_dset_path', type=str, default='../../data/office/amazon_31_list.txt', help="The source dataset path list")
-    parser.add_argument('--t_dset_path', type=str, default='../../data/office/webcam_10_list.txt', help="The target dataset path list")
+    parser.add_argument('--dset_num', type=int, default=0)
+    parser.add_argument('--task', type=str, default='true_domains')
+    # parser.add_argument('--s_dset_path', type=str, default='../../data/office/amazon_31_list.txt', help="The source dataset path list")
+    # parser.add_argument('--t_dset_path', type=str, default='../../data/office/webcam_10_list.txt', help="The target dataset path list")
     parser.add_argument('--test_interval', type=int, default=500, help="interval of two continuous test phase")
     parser.add_argument('--snapshot_interval', type=int, default=5000, help="interval of two continuous output model")
-    parser.add_argument('--output_dir', type=str, default='san', help="output directory of our model (in ../snapshot directory)")
+    # parser.add_argument('--output_dir', type=str, default='san', help="output directory of our model (in ../snapshot directory)")
     parser.add_argument('--lr', type=float, default=0.001, help="learning rate")
     parser.add_argument('--random', type=bool, default=False, help="whether use random projection")
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     #os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'
+    
+    if args.dset == "office":
+        dsets = (
+            "amazon_dslr",
+            "dslr_webcam",
+            "webcam_amazon"
+            )
+    else:
+        raise NotImplementedError
+    
+    args.s_dset_path = os.path.join('../data', args.dset, args.task, dsets[args.dset_num], 'labeled.txt')
+    args.t_dset_path = os.path.join('../data', args.dset, args.task, dsets[args.dset_num], 'unlabeled.txt')
+
+    cuda = ''.join([str(i) for i in os.environ['CUDA_VISIBLE_DEVICES']])
+    exec_num = os.environ['exec_num'] if 'exec_num' in os.environ.keys() else 0
+    from datetime import datetime
+    now = datetime.now().strftime("%y%m%d_%H:%M:%S")
+    args.output_dir = f'{args.dset}/{now}--c{cuda}n{exec_num}--{args.task}'
+    
 
     # train config
     config = {}
@@ -246,8 +269,8 @@ if __name__ == "__main__":
                            "lr_param":{"lr":args.lr, "gamma":0.001, "power":0.75} }
 
     config["dataset"] = args.dset
-    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":36}, \
-                      "target":{"list_path":args.t_dset_path, "batch_size":36}, \
+    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":64}, \
+                      "target":{"list_path":args.t_dset_path, "batch_size":64}, \
                       "test":{"list_path":args.t_dset_path, "batch_size":4}}
 
     if config["dataset"] == "office":

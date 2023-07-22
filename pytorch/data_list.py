@@ -8,15 +8,16 @@ from torch.utils.data import Dataset
 import os
 import os.path
 
-def make_dataset(image_list, labels):
+
+def make_dataset(image_list, labels, domains):
     if labels:
       len_ = len(image_list)
-      images = [(image_list[i].strip(), labels[i, :]) for i in range(len_)]
+      images = [(image_list[i].strip(), labels[i, :], domains[i, :]) for i in range(len_)]
     else:
-      if len(image_list[0].split()) > 2:
-        images = [(val.split()[0], np.array([int(la) for la in val.split()[1:]])) for val in image_list]
-      else:
-        images = [(val.split()[0], int(val.split()[1])) for val in image_list]
+    #   if len(image_list[0].split()) > 2:
+    #     images = [(val.split()[0], np.array([int(la) for la in val.split()[1:]])) for val in image_list]
+    #   else:
+        images = [(val.split()[0], int(val.split()[1]), int(val.split()[2])) for val in image_list]
     return images
 
 
@@ -31,11 +32,13 @@ def l_loader(path):
             return img.convert('L')
 
 class ImageList(Dataset):
-    def __init__(self, image_list, labels=None, transform=None, target_transform=None, mode='RGB'):
-        imgs = make_dataset(image_list, labels)
-        if len(imgs) == 0:
-            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
-                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+    def __init__(self, image_list, labels=None, domains=None, transform=None, target_transform=None, mode='RGB'):
+    # def __init__(self, image_list, labels=None, transform=None, target_transform=None, mode='RGB'):
+        # imgs = make_dataset(image_list, labels)
+        imgs = make_dataset(image_list, labels, domains)
+        # if len(imgs) == 0:
+        #     raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+        #                        "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
 
         self.imgs = imgs
         self.transform = transform
@@ -46,14 +49,15 @@ class ImageList(Dataset):
             self.loader = l_loader
 
     def __getitem__(self, index):
-        path, target = self.imgs[index]
+        path, target, domain = self.imgs[index]
         img = self.loader(path)
         if self.transform is not None:
             img = self.transform(img)
         if self.target_transform is not None:
             target = self.target_transform(target)
+            domain = self.target_transform(domain)
 
-        return img, target
+        return img, target, domain
 
     def __len__(self):
         return len(self.imgs)
@@ -62,9 +66,9 @@ class ImageValueList(Dataset):
     def __init__(self, image_list, labels=None, transform=None, target_transform=None,
                  loader=rgb_loader):
         imgs = make_dataset(image_list, labels)
-        if len(imgs) == 0:
-            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
-                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+        # if len(imgs) == 0:
+        #     raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+        #                        "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
 
         self.imgs = imgs
         self.values = [1.0] * len(imgs)

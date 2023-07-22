@@ -8,7 +8,7 @@ import math
 import pdb
 
 def calc_coeff(iter_num, high=1.0, low=0.0, alpha=10.0, max_iter=10000.0):
-    return np.float(2.0 * (high - low) / (1.0 + np.exp(-alpha*iter_num / max_iter)) - (high - low) + low)
+    return np.float32(2.0 * (high - low) / (1.0 + np.exp(-alpha*iter_num / max_iter)) - (high - low) + low)
 
 def init_weights(m):
     classname = m.__class__.__name__
@@ -186,7 +186,10 @@ def grl_hook(coeff):
 class ResNetFc(nn.Module):
   def __init__(self, resnet_name, use_bottleneck=True, bottleneck_dim=256, new_cls=False, class_num=1000):
     super(ResNetFc, self).__init__()
-    model_resnet = resnet_dict[resnet_name](pretrained=True)
+    if resnet_name == 'ResNet50':
+       model_resnet = resnet_dict[resnet_name](weights=models.ResNet50_Weights.IMAGENET1K_V1)
+    else:
+        model_resnet = resnet_dict[resnet_name](pretrained=True)
     self.conv1 = model_resnet.conv1
     self.bn1 = model_resnet.bn1
     self.relu = model_resnet.relu

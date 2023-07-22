@@ -25,9 +25,9 @@ def train(args, model, ad_net, random_layer, train_loader, train_loader1, optimi
             iter_source = iter(train_loader)    
         if batch_idx % len_target == 0:
             iter_target = iter(train_loader1)
-        data_source, label_source = iter_source.next()
+        data_source, label_source = next(iter_source)
         data_source, label_source = data_source.cuda(), label_source.cuda()
-        data_target, label_target = iter_target.next()
+        data_target, label_target = next(iter_target)
         data_target = data_target.cuda()
         optimizer.zero_grad()
         optimizer_ad.zero_grad()

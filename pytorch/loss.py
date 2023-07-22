@@ -21,14 +21,16 @@ def grl_hook(coeff):
 def CDAN(input_list, ad_net, entropy=None, coeff=None, random_layer=None):
     softmax_output = input_list[1].detach()
     feature = input_list[0]
+    domain_labels = input_list[2]
     if random_layer is None:
         op_out = torch.bmm(softmax_output.unsqueeze(2), feature.unsqueeze(1))
         ad_out = ad_net(op_out.view(-1, softmax_output.size(1) * feature.size(1)))
     else:
         random_out = random_layer.forward([feature, softmax_output])
         ad_out = ad_net(random_out.view(-1, random_out.size(1)))       
-    batch_size = softmax_output.size(0) // 2
-    dc_target = torch.from_numpy(np.array([[1]] * batch_size + [[0]] * batch_size)).float().cuda()
+    # batch_size = softmax_output.size(0) // 2
+    # dc_target = torch.from_numpy(np.array([[1]] * batch_size + [[0]] * batch_size)).float().cuda()
+    dc_target = domain_labels.unsqueeze(-1).float().cuda()
     if entropy is not None:
         entropy.register_hook(grl_hook(coeff))
         entropy = 1.0+torch.exp(-entropy)

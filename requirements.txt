@@ -1,0 +1,7 @@
+# tensorboardX
+scikit-learn
+scipy
+matplotlib
+numpy
+Pillow
+tqdm

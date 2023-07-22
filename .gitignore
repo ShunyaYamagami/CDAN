@@ -97,9 +97,12 @@ caffe/CURRENT
 caffe/MANIFEST-*
 
 pytorch/snapshot/*
-pytorch/*.sh
+# pytorch/*.sh
 tensorflow/snapshot/*
 *.jpg
 *.png
 *.tar.gz
 *.pth.tar
+
+data/
+data_origin/

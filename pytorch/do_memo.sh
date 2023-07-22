@@ -1,0 +1,1 @@
+. cmd.sh 0 0 0 -p office -t original_uda
