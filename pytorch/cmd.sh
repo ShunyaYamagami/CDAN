@@ -43,14 +43,32 @@ function process_args {
     echo "parent: $parent"
     echo -e ''  # (今は使っていないが)改行文字は echo コマンドに -e オプションを付けて実行した場合にのみ機能する.
     
-    python train_image.py \
-        'CDAN+E' \
-        --gpu_id $gpu_i \
-        --net ResNet50 \
-        --dset $parent \
-        --dset_num $dset_num \
-        --task $task \
-        --test_interval 500
+    ##### データセット設定
+    if [ $parent = 'office' ]; then
+        dsetlist=("amazon_dslr" "dslr_webcam" "webcam_amazon")
+    elif [ $parent = 'OfficeHome' ]; then
+        dsetlist=("Art_Clipart" "Art_Product" "Art_RealWorld" "Clipart_Product" "Clipart_RealWorld" "Product_RealWorld")
+    else
+        echo "不明なデータセット: $parent" >&2
+        return 1
+    fi
+    
+    COMMAND="conda deactivate && conda deactivate"
+    COMMAND+=" && conda activate cdan"
+    
+    local test_interval=500
+    
+    if [ $dset_num -eq -1 ]; then
+        for dset_num in "${!dsetlist[@]}"; do
+            COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --dset_num $dset_num  --task $task  --test_interval $test_interval"
+        done
+    else
+        COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --dset_num $dset_num  --task $task  --test_interval $test_interval"
+    fi
+
+    echo $COMMAND
+    echo ''
+    eval $COMMAND
 }
 
 

@@ -18,6 +18,9 @@ import random
 import pdb
 import math
 from tqdm import tqdm
+import logging
+from myfunc import set_determinism, set_logger
+
 
 def image_classification_test(loader, model, test_10crop=True):
     start_test = True
@@ -65,6 +68,7 @@ def image_classification_test(loader, model, test_10crop=True):
 
 
 def train(config):
+    logger = logging.getLogger(__name__)
     ## set pre-process
     prep_dict = {}
     prep_config = config["prep"]
@@ -151,10 +155,10 @@ def train(config):
             if temp_acc > best_acc:
                 best_acc = temp_acc
                 best_model = temp_model
-            log_str = "iter: {:05d}, precision: {:.5f}".format(i, temp_acc)
-            config["out_file"].write(log_str+"\n")
-            config["out_file"].flush()
-            print(log_str)
+            log_str = "iter: {:05d}, precision: {:.3f}%".format(i, temp_acc * 100)
+            # config["out_file"].write(log_str+"\n")
+            # config["out_file"].flush()
+            logger.info(log_str)
         if i % config["snapshot_interval"] == 0:
             torch.save(nn.Sequential(base_network), osp.join(config["output_path"], \
                 "iter_{:05d}_model.pth.tar".format(i)))
@@ -237,16 +241,17 @@ if __name__ == "__main__":
     config = {}
     config['method'] = args.method
     config["gpu"] = args.gpu_id
-    config["num_iterations"] = 100004
+    # config["num_iterations"] = 100004
+    config["num_iterations"] = 20004
     config["test_interval"] = args.test_interval
     config["snapshot_interval"] = args.snapshot_interval
     config["output_for_test"] = True
     config["output_path"] = "snapshot/" + args.output_dir
     if not osp.exists(config["output_path"]):
         os.system('mkdir -p '+config["output_path"])
-    config["out_file"] = open(osp.join(config["output_path"], "log.txt"), "w")
-    if not osp.exists(config["output_path"]):
-        os.mkdir(config["output_path"])
+    # config["out_file"] = open(osp.join(config["output_path"], "log.txt"), "w")
+    # if not osp.exists(config["output_path"]):
+    #     os.mkdir(config["output_path"])
 
     config["prep"] = {"test_10crop":True, 'params':{"resize_size":256, "crop_size":224, 'alexnet':False}}
     config["loss"] = {"trade_off":1.0}
@@ -269,8 +274,8 @@ if __name__ == "__main__":
                            "lr_param":{"lr":args.lr, "gamma":0.001, "power":0.75} }
 
     config["dataset"] = args.dset
-    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":64}, \
-                      "target":{"list_path":args.t_dset_path, "batch_size":64}, \
+    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":36}, \
+                      "target":{"list_path":args.t_dset_path, "batch_size":36}, \
                       "test":{"list_path":args.t_dset_path, "batch_size":4}}
 
     if config["dataset"] == "office":
@@ -295,6 +300,8 @@ if __name__ == "__main__":
         config["network"]["params"]["class_num"] = 65
     else:
         raise ValueError('Dataset cannot be recognized. Please define your own dataset here.')
-    config["out_file"].write(str(config))
-    config["out_file"].flush()
+    # config["out_file"].write(str(config))
+    # config["out_file"].flush()
+    set_determinism()
+    set_logger(config['output_path'])
     train(config)
