@@ -9,10 +9,16 @@ function process_args {
 
     # 残りの名前付き引数を解析
     local parent="office"  # データセット名のデフォルト値
-    local task="original_uda"
+    # local task="original_uda"
     # local task="true_domains"
     # local task="simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl"
     # local task="simclr_bs512_ep300_g3_shfl"
+    local task=(
+        # "original_uda" 
+        "true_domains" 
+        "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl" 
+        "simclr_bs512_ep300_g3_shfl"
+    )
     
     local params=$(getopt -n "$0" -o p:t: -l parent:,task: -- "$@")
     eval set -- "$params"
@@ -58,13 +64,16 @@ function process_args {
     
     local test_interval=500
     
-    if [ $dset_num -eq -1 ]; then
-        for dset_num in "${!dsetlist[@]}"; do
-            COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --dset_num $dset_num  --task $task  --test_interval $test_interval"
-        done
-    else
-        COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --dset_num $dset_num  --task $task  --test_interval $test_interval"
-    fi
+    for tsk in "${task[@]}"; do
+        if [ $dset_num -eq -1 ]; then
+            for domain_set in "${dsetlist[@]}"; do
+                COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
+            done
+        else
+            domain_set=${dsetlist[$dset_num]}
+            COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
+        fi
+    done
 
     echo $COMMAND
     echo ''

@@ -35,10 +35,12 @@ def CDAN(input_list, ad_net, entropy=None, coeff=None, random_layer=None):
         entropy.register_hook(grl_hook(coeff))
         entropy = 1.0+torch.exp(-entropy)
         source_mask = torch.ones_like(entropy)
-        source_mask[feature.size(0)//2:] = 0
+        # source_mask[feature.size(0)//2:] = 0
+        source_mask[np.where(domain_labels.cpu().numpy() == 0)[0].tolist()] = 0
         source_weight = entropy*source_mask
         target_mask = torch.ones_like(entropy)
-        target_mask[0:feature.size(0)//2] = 0
+        # target_mask[0:feature.size(0)//2] = 0
+        target_mask[np.where(domain_labels.cpu().numpy() == 1)[0].tolist()] = 0
         target_weight = entropy*target_mask
         weight = source_weight / torch.sum(source_weight).detach().item() + \
                  target_weight / torch.sum(target_weight).detach().item()

@@ -205,7 +205,7 @@ if __name__ == "__main__":
     parser.add_argument('--gpu_id', type=str, nargs='?', default='0', help="device id to run")
     parser.add_argument('--net', type=str, default='ResNet50', choices=["ResNet18", "ResNet34", "ResNet50", "ResNet101", "ResNet152", "VGG11", "VGG13", "VGG16", "VGG19", "VGG11BN", "VGG13BN", "VGG16BN", "VGG19BN", "AlexNet"])
     parser.add_argument('--dset', type=str, default='office', choices=['office', 'image-clef', 'visda', 'office-home'], help="The dataset or source dataset used")
-    parser.add_argument('--dset_num', type=int, default=0)
+    parser.add_argument('--domain_set', type=str, default='amazon_dslr')
     parser.add_argument('--task', type=str, default='true_domains')
     # parser.add_argument('--s_dset_path', type=str, default='../../data/office/amazon_31_list.txt', help="The source dataset path list")
     # parser.add_argument('--t_dset_path', type=str, default='../../data/office/webcam_10_list.txt', help="The target dataset path list")
@@ -227,21 +227,20 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError
     
-    args.s_dset_path = os.path.join('../data', args.dset, args.task, dsets[args.dset_num], 'labeled.txt')
-    args.t_dset_path = os.path.join('../data', args.dset, args.task, dsets[args.dset_num], 'unlabeled.txt')
+    args.s_dset_path = os.path.join('../data', args.dset, args.task, args.domain_set, 'labeled.txt')
+    args.t_dset_path = os.path.join('../data', args.dset, args.task, args.domain_set, 'unlabeled.txt')
 
     cuda = ''.join([str(i) for i in os.environ['CUDA_VISIBLE_DEVICES']])
     exec_num = os.environ['exec_num'] if 'exec_num' in os.environ.keys() else 0
     from datetime import datetime
     now = datetime.now().strftime("%y%m%d_%H:%M:%S")
-    args.output_dir = f'{args.dset}/{now}--c{cuda}n{exec_num}--{args.task}'
+    args.output_dir = f"{args.method}/{args.dset}/{now}--c{cuda}n{exec_num}--{args.domain_set}--{args.task}"
     
 
     # train config
     config = {}
     config['method'] = args.method
     config["gpu"] = args.gpu_id
-    # config["num_iterations"] = 100004
     config["num_iterations"] = 20004
     config["test_interval"] = args.test_interval
     config["snapshot_interval"] = args.snapshot_interval
