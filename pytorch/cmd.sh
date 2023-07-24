@@ -19,8 +19,9 @@ function process_args {
         "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl" 
         "simclr_bs512_ep300_g3_shfl"
     )
+    local method="CDAN+E"
     
-    local params=$(getopt -n "$0" -o p:t: -l parent:,task: -- "$@")
+    local params=$(getopt -n "$0" -o p:t: -l parent:,task:,method: -- "$@")
     eval set -- "$params"
 
     while true; do
@@ -30,7 +31,11 @@ function process_args {
                 shift 2
                 ;;
             -t|--task)
-                parent="$2"
+                task=("$2")
+                shift 2
+                ;;
+            --method)
+                method="$2"
                 shift 2
                 ;;
             --)
@@ -47,6 +52,7 @@ function process_args {
     echo "exec_num: $exec_num"
     echo "dset_num: $dset_num"
     echo "parent: $parent"
+    echo "method: $method"
     echo -e ''  # (今は使っていないが)改行文字は echo コマンドに -e オプションを付けて実行した場合にのみ機能する.
     
     ##### データセット設定
@@ -67,11 +73,11 @@ function process_args {
     for tsk in "${task[@]}"; do
         if [ $dset_num -eq -1 ]; then
             for domain_set in "${dsetlist[@]}"; do
-                COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
+                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
             done
         else
             domain_set=${dsetlist[$dset_num]}
-            COMMAND+=" && python train_image.py  'CDAN+E'  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
+            COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
         fi
     done
 

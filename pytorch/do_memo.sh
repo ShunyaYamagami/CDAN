@@ -1,1 +1,2 @@
-. cmd.sh 0 0 0 -p office -t original_uda
+. cmd.sh 0 0 -1 -p office -t true_domains --method CDAN+E  
+. cmd.sh 0 0 -1 -p office -t true_domains --method CDAN  
