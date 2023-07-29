@@ -8,17 +8,26 @@ function process_args {
     shift 3  # 無名引数数
 
     # 残りの名前付き引数を解析
-    local parent="office"  # データセット名のデフォルト値
-    # local task="original_uda"
-    # local task="true_domains"
-    # local task="simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl"
-    # local task="simclr_bs512_ep300_g3_shfl"
-    local task=(
-        # "original_uda" 
-        "true_domains" 
-        "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl" 
-        "simclr_bs512_ep300_g3_shfl"
-    )
+    local parent="Office31"
+
+    if [ $parent = 'Office31' ]; then
+        local task=(
+            # "original_uda"
+            # "true_domains"
+            # "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl"
+            # "simclr_bs512_ep300_g3_shfl"
+            "simple_bs512_ep300_g3_AE_outd64_shfl"
+            "contrastive_rpl_dim512_wght0.6_AE_bs256_ep300_outd64_g3"
+        )
+    elif [ $parent = 'OfficeHome' ]; then
+        local task=(
+            # "original_uda"
+            # "true_domains"
+            "simclr_rpl_dim128_wght0.5_bs512_ep3000_g3_encoder_outdim64_shfl"
+            "simclr_bs512_ep1000_g3_shfl"
+        )
+    fi
+    
     local method="CDAN+E"
     
     local params=$(getopt -n "$0" -o p:t: -l parent:,task:,method: -- "$@")
@@ -56,7 +65,7 @@ function process_args {
     echo -e ''  # (今は使っていないが)改行文字は echo コマンドに -e オプションを付けて実行した場合にのみ機能する.
     
     ##### データセット設定
-    if [ $parent = 'office' ]; then
+    if [ $parent = 'Office31' ]; then
         dsetlist=("amazon_dslr" "dslr_webcam" "webcam_amazon")
     elif [ $parent = 'OfficeHome' ]; then
         dsetlist=("Art_Clipart" "Art_Product" "Art_RealWorld" "Clipart_Product" "Clipart_RealWorld" "Product_RealWorld")
@@ -72,12 +81,12 @@ function process_args {
     
     for tsk in "${task[@]}"; do
         if [ $dset_num -eq -1 ]; then
-            for domain_set in "${dsetlist[@]}"; do
-                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
+            for dset in "${dsetlist[@]}"; do
+                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval"
             done
         else
-            domain_set=${dsetlist[$dset_num]}
-            COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dset $parent  --domain_set $domain_set  --task $tsk  --test_interval $test_interval"
+            dset=${dsetlist[$dset_num]}
+            COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval"
         fi
     done
 
