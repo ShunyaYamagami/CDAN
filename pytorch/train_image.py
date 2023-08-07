@@ -218,15 +218,6 @@ if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     #os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'
     
-    if args.dataset == "Office31":
-        dsets = (
-            "amazon_dslr",
-            "dslr_webcam",
-            "webcam_amazon"
-            )
-    else:
-        raise NotImplementedError
-    
     args.s_dset_path = os.path.join('/nas/data/syamagami/GDA/data/GDA_DA_methods/data', args.dataset, args.task, args.dset, 'labeled.txt')
     args.t_dset_path = os.path.join('/nas/data/syamagami/GDA/data/GDA_DA_methods/data', args.dataset, args.task, args.dset, 'unlabeled.txt')
 
