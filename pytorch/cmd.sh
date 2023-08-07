@@ -9,9 +9,10 @@ function process_args {
 
     # 残りの名前付き引数を解析
     local parent="OfficeHome"
-    local method="CDAN+E"
+    local method="CDAN"
+    local tmux_session=""
     
-    local params=$(getopt -n "$0" -o p:t: -l parent:,task:,method: -- "$@")
+    local params=$(getopt -n "$0" -o p:t: -l parent:,task:,method:,tmux: -- "$@")
     eval set -- "$params"
 
     while true; do
@@ -26,6 +27,10 @@ function process_args {
                 ;;
             --method)
                 method="$2"
+                shift 2
+                ;;
+            --tmux)
+                tmux_session="$2"
                 shift 2
                 ;;
             --)
@@ -43,9 +48,9 @@ function process_args {
     if [ $parent = 'Office31' ]; then
         local task=(
             # "original_uda"
-            # "true_domains"
-            # "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl"
-            # "simclr_bs512_ep300_g3_shfl"
+            "true_domains"
+            "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl"
+            "simclr_bs512_ep300_g3_shfl"
             "simple_bs512_ep300_g3_AE_outd64_shfl"
             "contrastive_rpl_dim512_wght0.6_AE_bs256_ep300_outd64_g3"
         )
@@ -100,7 +105,14 @@ function process_args {
 
     echo $COMMAND
     echo ''
-    eval $COMMAND
+    if [ -n "$tmux_session" ]; then
+        # 第3引数が存在する場合の処理. tmux内で実行する. $tmux_sessionはtmuxのセッション名.
+        tmux -2 new -d -s $tmux_session
+        tmux send-key -t $tmux_session.0 "$COMMAND" ENTER
+    else
+        # 第3引数が存在しない場合の処理. そのまま実行.
+        eval $COMMAND
+    fi
 }
 
 

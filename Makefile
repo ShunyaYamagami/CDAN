@@ -9,9 +9,6 @@ create_env:
 	@echo "Installing python dependencies..."
 	conda run -n $(ENV_NAME) conda install -y pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
 	conda run -n $(ENV_NAME) pip install -r ./requirements.txt
-	@echo "Copying directories..."
-	cp -r /nas/data/syamagami/GDA/data/GDA_DA_methods/data ./
-	mv ./data/Office31 ./data/office
 
 
 remove_env:
