@@ -10,6 +10,7 @@ function process_args {
     # 残りの名前付き引数を解析
     local parent="OfficeHome"
     local method="CDAN"
+    local task_temp=""
     local tmux_session=""
     
     local params=$(getopt -n "$0" -o p:t: -l parent:,task:,method:,tmux: -- "$@")
@@ -22,7 +23,7 @@ function process_args {
                 shift 2
                 ;;
             -t|--task)
-                task=("$2")
+                task_temp="$2"
                 shift 2
                 ;;
             --method)
@@ -62,7 +63,10 @@ function process_args {
             # "simclr_bs512_ep1000_g3_shfl"
         )
     fi
-    
+    if [ -n "$task_temp" ]; then
+        task=("$task_temp")
+    fi
+
     
     echo "gpu_i: $gpu_i"
     echo "exec_num: $exec_num"
