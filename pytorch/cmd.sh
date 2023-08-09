@@ -58,9 +58,9 @@ function process_args {
     elif [ $parent = 'OfficeHome' ]; then
         local task=(
             # "original_uda"
-            "true_domains"
-            "simclr_rpl_dim128_wght0.5_bs512_ep3000_g3_encoder_outdim64_shfl"
-            # "simclr_bs512_ep1000_g3_shfl"
+            # "true_domains"
+            # "simclr_rpl_dim128_wght0.5_bs512_ep3000_g3_encoder_outdim64_shfl"
+            "simclr_bs512_ep1000_g3_shfl"
         )
     fi
     if [ -n "$task_temp" ]; then
@@ -77,13 +77,9 @@ function process_args {
     
     ##### データセット設定
     if [ $parent = 'Office31' ]; then
-        # dsetlist=("amazon_dslr" "webcam_amazon" "dslr_webcam")
-        dsetlist=("amazon_webcam" "webcam_dslr" "dslr_amazon")
-        # dsetlist=("amazon_dslr" "amazon_webcam" "webcam_dslr" "webcam_amazon" "dslr_amazon" "dslr_webcam")
+        dsetlist=("amazon_dslr" "amazon_webcam" "webcam_dslr" "webcam_amazon" "dslr_amazon" "dslr_webcam")
     elif [ $parent = 'OfficeHome' ]; then
-        # dsetlist=("Art_Clipart" "Art_Product" "Art_RealWorld" "Clipart_Product" "Clipart_RealWorld" "Product_RealWorld")
-        dsetlist=('Clipart_Art' 'Product_Art' 'Product_Clipart' 'RealWorld_Art' 'RealWorld_Clipart' 'RealWorld_Product')
-        # dsetlist=('Art_Clipart' 'Art_Product' 'Art_RealWorld' 'Clipart_Art' 'Clipart_Product' 'Clipart_RealWorld' 'Product_Art' 'Product_Clipart' 'Product_RealWorld' 'RealWorld_Art' 'RealWorld_Clipart' 'RealWorld_Product')
+        dsetlist=('Art_Clipart' 'Art_Product' 'Art_RealWorld' 'Clipart_Art' 'Clipart_Product' 'Clipart_RealWorld' 'Product_Art' 'Product_Clipart' 'Product_RealWorld' 'RealWorld_Art' 'RealWorld_Clipart' 'RealWorld_Product')
     elif [ $parent = 'DomainNet' ]; then
         dsetlist=('clipart_infograph' 'clipart_painting' 'clipart_quickdraw' 'clipart_real' 'clipart_sketch' 'infograph_painting' 'infograph_quickdraw' 'infograph_real' 'infograph_sketch' 'painting_quickdraw' 'painting_real' 'painting_sketch' 'quickdraw_real' 'quickdraw_sketch' 'real_sketch')
     else
@@ -99,6 +95,13 @@ function process_args {
     for tsk in "${task[@]}"; do
         if [ $dset_num -eq -1 ]; then
             for dset in "${dsetlist[@]}"; do
+                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval"
+            done
+        elif [[ $dset_num == *"_"* ]]; then  # アンダーラインが含まれているかチェック
+            # アンダーラインで文字列を分割
+            IFS='_' read -r -a dset_num_list <<< "$dset_num"
+            for num in "${dset_num_list[@]}"; do
+                dset=${dsetlist[$num]}
                 COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval"
             done
         else
