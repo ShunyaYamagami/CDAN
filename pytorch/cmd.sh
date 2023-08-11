@@ -49,10 +49,10 @@ function process_args {
     if [ $parent = 'Office31' ]; then
         local task=(
             # "original_uda"
-            "true_domains"
-            "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl"
-            "simclr_bs512_ep300_g3_shfl"
-            "simple_bs512_ep300_g3_AE_outd64_shfl"
+            # "true_domains"
+            # "simclr_rpl_uniform_dim512_wght0.5_bs512_ep300_g3_encoder_outdim64_shfl"
+            # "simclr_bs512_ep300_g3_shfl"
+            # "simple_bs512_ep300_g3_AE_outd64_shfl"
             "contrastive_rpl_dim512_wght0.6_AE_bs256_ep300_outd64_g3"
         )
     elif [ $parent = 'OfficeHome' ]; then
@@ -90,7 +90,7 @@ function process_args {
     COMMAND="conda deactivate && conda deactivate"
     COMMAND+=" && conda activate cdan"
     
-    local test_interval=500
+    local test_interval=5000
     
     for tsk in "${task[@]}"; do
         if [ $dset_num -eq -1 ]; then
