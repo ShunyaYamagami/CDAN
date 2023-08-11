@@ -159,7 +159,7 @@ def train(config):
             # config["out_file"].write(log_str+"\n")
             # config["out_file"].flush()
             logger.info(log_str)
-        if i % config["snapshot_interval"] == 0:
+        if i != 0 and i % config["snapshot_interval"] == 0:
             torch.save(nn.Sequential(base_network), osp.join(config["output_path"], \
                 "iter_{:05d}_model.pth.tar".format(i)))
 
