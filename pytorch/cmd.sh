@@ -60,7 +60,8 @@ function process_args {
             # "original_uda"
             # "true_domains"
             # "simclr_rpl_dim128_wght0.5_bs512_ep3000_g3_encoder_outdim64_shfl"
-            "simclr_bs512_ep1000_g3_shfl"
+            # "simclr_bs512_ep1000_g3_shfl"
+            "contrastive_rpl_dim128_wght0.6_AE_bs512_ep3000_outd64_g3"
         )
     fi
     if [ -n "$task_temp" ]; then

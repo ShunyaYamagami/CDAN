@@ -1,12 +1,12 @@
-. cmd.sh 0 0 5   \
-    -p OfficeHome  \
-    --method CDAN  \
-    --task   simclr_bs512_ep1000_g3_shfl  \
-    --tmux   CDANE_0
-
-. cmd.sh 1 0 5 \
+. cmd.sh 0 0 0_2_4   \
     -p OfficeHome  \
     --method CDAN+E  \
-    --task   simclr_bs512_ep1000_g3_shfl  \
-    --tmux   CDANE_1
+    --task   contrastive_rpl_dim128_wght0.6_AE_bs512_ep3000_outd64_g3  \
+    --tmux   CDAN+E_0
+
+. cmd.sh 1 0 1_3_5 \
+    -p OfficeHome  \
+    --method CDAN+E  \
+    --task   contrastive_rpl_dim128_wght0.6_AE_bs512_ep3000_outd64_g3  \
+    --tmux   CDAN+E_1
 
