@@ -10,10 +10,11 @@ function process_args {
     # 残りの名前付き引数を解析
     local parent="OfficeHome"
     local method="CDAN"
+    local resume=""
     local task_temp=""
     local tmux_session=""
     
-    local params=$(getopt -n "$0" -o p:t: -l parent:,task:,method:,tmux: -- "$@")
+    local params=$(getopt -n "$0" -o p:t: -l parent:,task:,method:,resume:,tmux: -- "$@")
     eval set -- "$params"
 
     while true; do
@@ -28,6 +29,10 @@ function process_args {
                 ;;
             --method)
                 method="$2"
+                shift 2
+                ;;
+            --resume)
+                resume="--resume $2"
                 shift 2
                 ;;
             --tmux)
@@ -74,6 +79,7 @@ function process_args {
     echo "dset_num: $dset_num"
     echo "parent: $parent"
     echo "method: $method"
+    echo "resume: $resume"
     echo -e ''  # (今は使っていないが)改行文字は echo コマンドに -e オプションを付けて実行した場合にのみ機能する.
     
     ##### データセット設定
@@ -96,18 +102,18 @@ function process_args {
     for tsk in "${task[@]}"; do
         if [ $dset_num -eq -1 ]; then
             for dset in "${dsetlist[@]}"; do
-                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval"
+                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval  $resume"
             done
         elif [[ $dset_num == *"_"* ]]; then  # アンダーラインが含まれているかチェック
             # アンダーラインで文字列を分割
             IFS='_' read -r -a dset_num_list <<< "$dset_num"
             for num in "${dset_num_list[@]}"; do
                 dset=${dsetlist[$num]}
-                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval"
+                COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval  $resume"
             done
         else
             dset=${dsetlist[$dset_num]}
-            COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval"
+            COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval  $resume"
         fi
     done
 

@@ -70,9 +70,10 @@ def image_classification_test(loader, model, test_10crop=True):
 
 def _get_start_epoch(config):
     start_epoch = 0
+    print(os.path.join(config["output_path"], 'log.txt'))
     with open(os.path.join(config["output_path"], 'log.txt'), 'r') as f:
         lines = f.readlines()
-        for line in lines.reverse():
+        for line in lines[::-1]:
             try:
                 if 'iter' in line:
                     start_epoch = int(re.search(r'iter: (\d+)', line).group(1))
@@ -167,11 +168,11 @@ def train(config):
     if config['resume']:
         start_epoch = _get_start_epoch(config)
         base_network = torch.load(os.path.join(config["output_path"], f"iter_{start_epoch}_model.pth.tar"))
-        if start_epoch >= config["test_interval"] - 5:
+        if start_epoch >= config["num_iterations"] - 5:
             return
-        logger.info(f"Resume from: {start_epoch} epoch\t iter_{start_epoch}_model.pth.tar")
+        logger.info(f"Resume from: {start_epoch} epoch\t iter_{start_epoch}_model.pth.tar\n")
 
-    for i in tqdm(start_epoch, range(config["num_iterations"])):
+    for i in tqdm(range(start_epoch, config["num_iterations"])):
         if i % config["test_interval"] == config["test_interval"] - 1:
             base_network.train(False)
             temp_acc = image_classification_test(dset_loaders, \
@@ -194,9 +195,9 @@ def train(config):
         ad_net.train(True)
         optimizer = lr_scheduler(optimizer, i, **schedule_param)
         optimizer.zero_grad()
-        if i % len_train_source == 0:
+        if i % len_train_source == 0 or i == start_epoch:
             iter_source = iter(dset_loaders["source"])
-        if i % len_train_target == 0:
+        if i % len_train_target == 0 or i == start_epoch:
             iter_target = iter(dset_loaders["target"])
         inputs_source, labels_source, domain_source = next(iter_source)
         inputs_target, labels_target, domain_target = next(iter_target)
@@ -232,7 +233,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, default='Office31', choices=['Office31', 'image-clef', 'visda', 'OfficeHome'], help="The dataset or source dataset used")
     parser.add_argument('--dset', type=str, default='amazon_dslr')
     parser.add_argument('--task', type=str, default='true_domains')
-    parser.add_argument('--resume', type=str, default='')
+    parser.add_argument('--resume', type=str, default='')  # 'CDAN/Office31/210129_16:00:00--c0123n0--amazon_dslr--true_domains  のように, methodとparetを示す親ディレクトリも書く.
     # parser.add_argument('--s_dset_path', type=str, default='../../data/Office31/amazon_31_list.txt', help="The source dataset path list")
     # parser.add_argument('--t_dset_path', type=str, default='../../data/Office31/webcam_10_list.txt', help="The target dataset path list")
     parser.add_argument('--test_interval', type=int, default=500, help="interval of two continuous test phase")
@@ -250,7 +251,12 @@ if __name__ == "__main__":
     cuda = ''.join([str(i) for i in os.environ['CUDA_VISIBLE_DEVICES']])
     exec_num = os.environ['exec_num'] if 'exec_num' in os.environ.keys() else 0
     if args.resume:
+        assert len(args.resume.split('/')) == 3, 'CDAN/Office31/210129_16:00:00--c0123n0--amazon_dslr--true_domains のように, methodとparetを示す親ディレクトリも書く.'
         args.output_dir = args.resume
+        args.method = args.resume.split('/')[0]
+        args.dataset = args.resume.split('/')[1]
+        args.dset = args.resume.split('--')[2]
+        args.task = args.resume.split('--')[3]
     else:
         from datetime import datetime
         now = datetime.now().strftime("%y%m%d_%H:%M:%S")
