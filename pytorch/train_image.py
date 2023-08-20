@@ -1,4 +1,5 @@
 import argparse
+import re
 import os
 import os.path as osp
 
@@ -66,6 +67,20 @@ def image_classification_test(loader, model, test_10crop=True):
     accuracy = torch.sum(torch.squeeze(predict).float() == all_label).item() / float(all_label.size()[0])
     return accuracy
 
+
+def _get_start_epoch(config):
+    start_epoch = 0
+    with open(os.path.join(config["output_path"], 'log.txt'), 'r') as f:
+        lines = f.readlines()
+        for line in lines.reverse():
+            try:
+                if 'iter' in line:
+                    start_epoch = int(re.search(r'iter: (\d+)', line).group(1))
+                    start_epoch += 1
+                    break
+            except:
+                start_epoch = 0
+    return start_epoch
 
 def train(config):
     logger = logging.getLogger(__name__)
@@ -146,7 +161,17 @@ def train(config):
     len_train_target = len(dset_loaders["target"])
     transfer_loss_value = classifier_loss_value = total_loss_value = 0.0
     best_acc = 0.0
-    for i in tqdm(range(config["num_iterations"])):
+    start_epoch = 0
+
+    # Resume
+    if config['resume']:
+        start_epoch = _get_start_epoch(config)
+        base_network = torch.load(os.path.join(config["output_path"], f"iter_{start_epoch}_model.pth.tar"))
+        if start_epoch >= config["test_interval"] - 5:
+            return
+        logger.info(f"Resume from: {start_epoch} epoch\t iter_{start_epoch}_model.pth.tar")
+
+    for i in tqdm(start_epoch, range(config["num_iterations"])):
         if i % config["test_interval"] == config["test_interval"] - 1:
             base_network.train(False)
             temp_acc = image_classification_test(dset_loaders, \
@@ -207,6 +232,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, default='Office31', choices=['Office31', 'image-clef', 'visda', 'OfficeHome'], help="The dataset or source dataset used")
     parser.add_argument('--dset', type=str, default='amazon_dslr')
     parser.add_argument('--task', type=str, default='true_domains')
+    parser.add_argument('--resume', type=str, default='')
     # parser.add_argument('--s_dset_path', type=str, default='../../data/Office31/amazon_31_list.txt', help="The source dataset path list")
     # parser.add_argument('--t_dset_path', type=str, default='../../data/Office31/webcam_10_list.txt', help="The target dataset path list")
     parser.add_argument('--test_interval', type=int, default=500, help="interval of two continuous test phase")
@@ -223,10 +249,13 @@ if __name__ == "__main__":
 
     cuda = ''.join([str(i) for i in os.environ['CUDA_VISIBLE_DEVICES']])
     exec_num = os.environ['exec_num'] if 'exec_num' in os.environ.keys() else 0
-    from datetime import datetime
-    now = datetime.now().strftime("%y%m%d_%H:%M:%S")
-    args.output_dir = f"{args.method}/{args.dataset}/{now}--c{cuda}n{exec_num}--{args.dset}--{args.task}"
-    
+    if args.resume:
+        args.output_dir = args.resume
+    else:
+        from datetime import datetime
+        now = datetime.now().strftime("%y%m%d_%H:%M:%S")
+        args.output_dir = f"{args.method}/{args.dataset}/{now}--c{cuda}n{exec_num}--{args.dset}--{args.task}"
+        
 
     # train config
     config = {}
@@ -235,6 +264,7 @@ if __name__ == "__main__":
     config["num_iterations"] = 35004
     config["test_interval"] = args.test_interval
     config["snapshot_interval"] = args.snapshot_interval
+    config["resume"] = args.resume
     config["output_for_test"] = True
     config["output_path"] = "snapshot/" + args.output_dir
     # if not osp.exists(config["output_path"]):
