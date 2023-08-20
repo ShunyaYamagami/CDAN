@@ -106,3 +106,5 @@ tensorflow/snapshot/*
 
 data/
 data_origin/
+resume_commands.txt
+a.ipynb
