@@ -69,19 +69,23 @@ def image_classification_test(loader, model, test_10crop=True):
 
 
 def _get_start_epoch(config):
-    start_epoch = 0
-    print(os.path.join(config["output_path"], 'log.txt'))
-    with open(os.path.join(config["output_path"], 'log.txt'), 'r') as f:
-        lines = f.readlines()
-        for line in lines[::-1]:
-            try:
-                if 'iter' in line:
-                    start_epoch = int(re.search(r'iter: (\d+)', line).group(1))
-                    start_epoch += 1
-                    break
-            except:
-                start_epoch = 0
-    return start_epoch
+    from glob import glob
+    file_names = glob(os.path.join(config["output_path"], 'iter_*.pth.tar'))
+    if len(file_names) == 0:
+        return 0
+    max_iter_file = max(file_names, key=lambda name: int(re.search(r'iter_(\d+)_model.pth.tar', name).group(1)))
+    max_iter_number = int(re.search(r'iter_(\d+)_model.pth.tar', max_iter_file).group(1))
+    # with open(os.path.join(config["output_path"], 'log.txt'), 'r') as f:
+    #     lines = f.readlines()
+    #     for line in lines[::-1]:
+    #         try:
+    #             if 'iter' in line:
+    #                 start_epoch = int(re.search(r'iter: (\d+)', line).group(1))
+    #                 start_epoch += 1
+    #                 break
+    #         except:
+    #             start_epoch = 0
+    return max_iter_number
 
 def train(config):
     logger = logging.getLogger(__name__)
