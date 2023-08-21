@@ -249,9 +249,6 @@ if __name__ == "__main__":
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     #os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'
     
-    args.s_dset_path = os.path.join('/nas/data/syamagami/GDA/data/GDA_DA_methods/data', args.dataset, args.task, args.dset, 'labeled.txt')
-    args.t_dset_path = os.path.join('/nas/data/syamagami/GDA/data/GDA_DA_methods/data', args.dataset, args.task, args.dset, 'unlabeled.txt')
-
     cuda = ''.join([str(i) for i in os.environ['CUDA_VISIBLE_DEVICES']])
     exec_num = os.environ['exec_num'] if 'exec_num' in os.environ.keys() else 0
     if args.resume:
@@ -261,11 +258,20 @@ if __name__ == "__main__":
         args.dataset = args.resume.split('/')[1]
         args.dset = args.resume.split('--')[2]
         args.task = args.resume.split('--')[3]
+        print(f'''
+            args.output_dir : \t {args.output_dir}
+            args.method : \t {args.method}
+            args.dataset : \t {args.dataset}
+            args.dset : \t {args.dset}
+            args.task : \t {args.task}
+        ''')
     else:
         from datetime import datetime
         now = datetime.now().strftime("%y%m%d_%H:%M:%S")
         args.output_dir = f"{args.method}/{args.dataset}/{now}--c{cuda}n{exec_num}--{args.dset}--{args.task}"
-        
+
+    args.s_dset_path = os.path.join('/nas/data/syamagami/GDA/data/GDA_DA_methods/data', args.dataset, args.task, args.dset, 'labeled.txt')
+    args.t_dset_path = os.path.join('/nas/data/syamagami/GDA/data/GDA_DA_methods/data', args.dataset, args.task, args.dset, 'unlabeled.txt')
 
     # train config
     config = {}
