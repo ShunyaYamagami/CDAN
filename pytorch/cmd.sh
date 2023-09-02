@@ -85,10 +85,13 @@ function process_args {
     ##### データセット設定
     if [ $parent = 'Office31' ]; then
         dsetlist=("amazon_dslr" "webcam_amazon" "dslr_webcam")
+        local test_interval=5000
     elif [ $parent = 'OfficeHome' ]; then
         dsetlist=("Art_Clipart" "Art_Product" "Art_RealWorld" "Clipart_Product" "Clipart_RealWorld" "Product_RealWorld")
+        local test_interval=5000
     elif [ $parent = 'DomainNet' ]; then
         dsetlist=('clipart_infograph' 'clipart_painting' 'clipart_quickdraw' 'clipart_real' 'clipart_sketch' 'infograph_painting' 'infograph_quickdraw' 'infograph_real' 'infograph_sketch' 'painting_quickdraw' 'painting_real' 'painting_sketch' 'quickdraw_real' 'quickdraw_sketch' 'real_sketch')
+        local test_interval=5000
     else
         echo "不明なデータセット: $parent" >&2
         return 1
@@ -97,7 +100,6 @@ function process_args {
     COMMAND="conda deactivate && conda deactivate"
     COMMAND+=" && conda activate cdan"
     
-    local test_interval=5000
     
     for tsk in "${task[@]}"; do
         if [ $dset_num -eq -1 ]; then

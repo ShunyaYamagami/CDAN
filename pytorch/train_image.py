@@ -234,7 +234,7 @@ if __name__ == "__main__":
     parser.add_argument('method', type=str, default='CDAN+E', choices=['CDAN', 'CDAN+E', 'DANN'])
     parser.add_argument('--gpu_id', type=str, nargs='?', default='0', help="device id to run")
     parser.add_argument('--net', type=str, default='ResNet50', choices=["ResNet18", "ResNet34", "ResNet50", "ResNet101", "ResNet152", "VGG11", "VGG13", "VGG16", "VGG19", "VGG11BN", "VGG13BN", "VGG16BN", "VGG19BN", "AlexNet"])
-    parser.add_argument('--dataset', type=str, default='Office31', choices=['Office31', 'image-clef', 'visda', 'OfficeHome'], help="The dataset or source dataset used")
+    parser.add_argument('--dataset', type=str, default='Office31', choices=['Office31', 'image-clef', 'visda', 'OfficeHome', 'DomainNet'], help="The dataset or source dataset used")
     parser.add_argument('--dset', type=str, default='amazon_dslr')
     parser.add_argument('--task', type=str, default='true_domains')
     parser.add_argument('--resume', type=str, default='')  # 'CDAN/Office31/210129_16:00:00--c0123n0--amazon_dslr--true_domains  のように, methodとparetを示す親ディレクトリも書く.
@@ -280,8 +280,7 @@ if __name__ == "__main__":
     # if not osp.exists(config["output_path"]):
     #     os.system('mkdir -p '+config["output_path"])
     # config["out_file"] = open(osp.join(config["output_path"], "log.txt"), "w")
-    if not osp.exists(config["output_path"]):
-        os.mkdir(config["output_path"])
+    os.makedirs(config["output_path"], exist_ok=True)
 
     config["prep"] = {"test_10crop":True, 'params':{"resize_size":256, "crop_size":224, 'alexnet':False}}
     config["loss"] = {"trade_off":1.0}
@@ -328,6 +327,9 @@ if __name__ == "__main__":
     elif config["dataset"] == "OfficeHome":
         config["optimizer"]["lr_param"]["lr"] = 0.001 # optimal parameters
         config["network"]["params"]["class_num"] = 65
+    elif config["dataset"] == "DomainNet":
+        config["optimizer"]["lr_param"]["lr"] = 0.001 # optimal parameters
+        config["network"]["params"]["class_num"] = 345
     else:
         raise ValueError('Dataset cannot be recognized. Please define your own dataset here.')
     # config["out_file"].write(str(config))
