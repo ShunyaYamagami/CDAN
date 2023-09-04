@@ -50,7 +50,7 @@ def image_classification_test(loader, model, test_10crop=False):
         else:
             for data in tqdm(loader, desc='Testing: '):
                 inputs = data[0].cuda()
-                labels = data[1].cuda()
+                labels = data[1]
                 _, outputs = model(inputs)
                 if start_test:
                     all_output = outputs.float().cpu()
