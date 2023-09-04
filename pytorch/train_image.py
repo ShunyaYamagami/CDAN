@@ -23,12 +23,12 @@ import logging
 from myfunc import set_determinism, set_logger
 
 
-def image_classification_test(loader, model, test_10crop=True):
+def image_classification_test(loader, model, test_10crop=False):
     start_test = True
     with torch.no_grad():
         if test_10crop:
-            iter_test = [iter(loader['test'][i]) for i in range(10)]
-            for i in range(len(loader['test'][0])):
+            iter_test = [iter(loader[i]) for i in range(10)]
+            for i in range(len(loader[0])):
                 data = [next(iter_test[j]) for j in range(10)]
                 inputs = [data[j][0] for j in range(10)]
                 labels = data[0][1]
@@ -48,13 +48,9 @@ def image_classification_test(loader, model, test_10crop=True):
                     all_output = torch.cat((all_output, outputs.float().cpu()), 0)
                     all_label = torch.cat((all_label, labels.float()), 0)
         else:
-            iter_test = iter(loader["test"])
-            for i in range(len(loader['test'])):
-                data = next(iter_test)
-                inputs = data[0]
-                labels = data[1]
-                inputs = inputs.cuda()
-                labels = labels.cuda()
+            for data in tqdm(loader, desc='Testing: '):
+                inputs = data[0].cuda()
+                labels = data[1].cuda()
                 _, outputs = model(inputs)
                 if start_test:
                     all_output = outputs.float().cpu()
@@ -176,10 +172,10 @@ def train(config):
             return
         logger.info(f"Resume from: {start_epoch} epoch\t iter_{start_epoch}_model.pth.tar\n")
 
-    for i in tqdm(range(start_epoch, config["num_iterations"])):
+    for i in tqdm(range(start_epoch, config["num_iterations"]), desc='Training: '):
         if i % config["test_interval"] == config["test_interval"] - 1:
             base_network.train(False)
-            temp_acc = image_classification_test(dset_loaders, \
+            temp_acc = image_classification_test(dset_loaders['test'], \
                 base_network, test_10crop=prep_config["test_10crop"])
             temp_model = nn.Sequential(base_network)
             if temp_acc > best_acc:
@@ -282,7 +278,7 @@ if __name__ == "__main__":
     # config["out_file"] = open(osp.join(config["output_path"], "log.txt"), "w")
     os.makedirs(config["output_path"], exist_ok=True)
 
-    config["prep"] = {"test_10crop":True, 'params':{"resize_size":256, "crop_size":224, 'alexnet':False}}
+    config["prep"] = {"test_10crop":False, 'params':{"resize_size":256, "crop_size":224, 'alexnet':False}}
     config["loss"] = {"trade_off":1.0}
     if "AlexNet" in args.net:
         config["prep"]['params']['alexnet'] = True
