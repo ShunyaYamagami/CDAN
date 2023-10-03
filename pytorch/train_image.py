@@ -267,7 +267,7 @@ if __name__ == "__main__":
     config = {}
     config['method'] = args.method
     config["gpu"] = args.gpu_id
-    config["num_iterations"] = 35004
+    config["num_iterations"] = 70004
     config["test_interval"] = args.test_interval
     config["snapshot_interval"] = args.snapshot_interval
     config["resume"] = args.resume
