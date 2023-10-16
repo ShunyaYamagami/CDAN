@@ -1,6 +1,14 @@
 cd  ~/lab/gda/da/CDAN/pytorch
 
-. cmd.sh 0 0 1_2_3_4_5_6_7     --parent DomainNet  --task true_domains  --method CDAN+E  --tmux DomainNet_0
+. cmd.sh 0 0 3_4_5_6_7_8_9_10_11_12_13_14  \
+    --parent DomainNet  \
+    --task contrastive_rpl_dim128_wght0.6_AE_bs512_ep2000_lr0.001_outd64_g3  \
+    --method CDAN \
+    --tmux CDAN
+# ---------------------------------------------------------
+. cmd.sh 1 0 1_2_3_4_5_6_7_8_9_10_11_12_13_14  \
+    --parent DomainNet  \
+    --task contrastive_rpl_dim128_wght0.6_AE_bs512_ep2000_lr0.001_outd64_g3  \
+    --method CDAN+E \
+    --tmux CDAN+E
 
-. cmd.sh 1 0 14  --parent DomainNet  --task true_domains  --method CDAN+E  --resume CDAN+E/DomainNet/230904_19:32:48--c1n0--real_sketch--true_domains  --tmux DomainNet_1
-. cmd.sh 1 0 13_12_11_10_9_8  --parent DomainNet  --task true_domains  --method CDAN+E  --tmux DomainNet_1
