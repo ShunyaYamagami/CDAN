@@ -305,9 +305,9 @@ if __name__ == "__main__":
                            "lr_param":{"lr":args.lr, "gamma":0.001, "power":0.75} }
 
     config["dataset"] = args.dataset
-    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":36}, \
-                      "target":{"list_path":args.t_dset_path, "batch_size":36}, \
-                      "test":{"list_path":args.t_dset_path, "batch_size":4}}
+    config["data"] = {"source":{"list_path":args.s_dset_path, "batch_size":54}, \
+                      "target":{"list_path":args.t_dset_path, "batch_size":54}, \
+                      "test":{"list_path":args.t_dset_path, "batch_size":54}}
 
     if config["dataset"] == "Office31":
         if ("amazon" in args.s_dset_path and "webcam" in args.t_dset_path) or \
