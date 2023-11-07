@@ -1,9 +1,9 @@
 # CDAN
 cd  ~/lab/gda/da/CDAN/pytorch
-. cmd.sh  0 0 Art_Clipart_Product  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
-. cmd.sh  0 0 Art_Clipart_RealWorld  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
-. cmd.sh  0 0 Art_Product_RealWorld  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
-. cmd.sh  0 0 Clipart_Product_RealWorld  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
+# . cmd.sh  0 0 Art_Clipart_Product  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
+# . cmd.sh  0 0 Art_Clipart_RealWorld  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
+# . cmd.sh  0 0 Art_Product_RealWorld  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
+# . cmd.sh  0 0 Clipart_Product_RealWorld  --method CDAN  --parent OfficeHome  --task true_domains  --tmux CDAN
 . cmd.sh  0 0 Art_Clipart_Product  --method CDAN  --parent OfficeHome  --task simclr_encoder_bs512_ep3000_lr0.001_outd64_g3  --tmux CDAN
 . cmd.sh  0 0 Art_Clipart_RealWorld  --method CDAN  --parent OfficeHome  --task simclr_encoder_bs512_ep3000_lr0.001_outd64_g3  --tmux CDAN
 . cmd.sh  0 0 Art_Product_RealWorld  --method CDAN  --parent OfficeHome  --task simclr_encoder_bs512_ep3000_lr0.001_outd64_g3  --tmux CDAN
@@ -18,10 +18,10 @@ cd  ~/lab/gda/da/CDAN/pytorch
 
 # CDAN+E
 cd  ~/lab/gda/da/CDAN/pytorch
-. cmd.sh  1 0 Art_Clipart_Product  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
-. cmd.sh  1 0 Art_Clipart_RealWorld  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
-. cmd.sh  1 0 Art_Product_RealWorld  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
-. cmd.sh  1 0 Clipart_Product_RealWorld  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
+# . cmd.sh  1 0 Art_Clipart_Product  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
+# . cmd.sh  1 0 Art_Clipart_RealWorld  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
+# . cmd.sh  1 0 Art_Product_RealWorld  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
+# . cmd.sh  1 0 Clipart_Product_RealWorld  --method CDAN+E  --parent OfficeHome  --task true_domains  --tmux CDAN+E
 . cmd.sh  1 0 Art_Clipart_Product  --method CDAN+E  --parent OfficeHome  --task simclr_encoder_bs512_ep3000_lr0.001_outd64_g3  --tmux CDAN+E
 . cmd.sh  1 0 Art_Clipart_RealWorld  --method CDAN+E  --parent OfficeHome  --task simclr_encoder_bs512_ep3000_lr0.001_outd64_g3  --tmux CDAN+E
 . cmd.sh  1 0 Art_Product_RealWorld  --method CDAN+E  --parent OfficeHome  --task simclr_encoder_bs512_ep3000_lr0.001_outd64_g3  --tmux CDAN+E

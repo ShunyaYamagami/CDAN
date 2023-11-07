@@ -41,13 +41,22 @@ def CDAN(input_list, ad_net, entropy=None, coeff=None, random_layer=None):
         target_weight = entropy*target_mask
         weight = source_weight / torch.sum(source_weight).detach().item() + \
                  target_weight / torch.sum(target_weight).detach().item()
-        return torch.sum(weight.view(-1, 1) * nn.BCELoss(reduction='none')(ad_out, dc_target)) / torch.sum(weight).detach().item()
+        ####################################################################
+        # Changed @ 2023/11/7
+        if max(dc_target) <= 1:
+            return torch.sum(weight.view(-1, 1) * nn.BCELoss(reduction='none')(ad_out, dc_target)) / torch.sum(weight).detach().item()
+        else:
+            return torch.sum(weight.view(-1, 1) * nn.CrossEntropyLoss(reduction='none')(ad_out, dc_target))  / torch.sum(weight).detach().item()
+        ####################################################################
     else:
+        ####################################################################
+        # Changed @ 2023/11/7
         if max(dc_target) <= 1:
             return nn.BCELoss()(ad_out, dc_target) 
         else:
             dc_target = dc_target / max(dc_target)
             return nn.CrossEntropyLoss()(ad_out, dc_target) 
+        ####################################################################
 
 
 def DANN(features, ad_net):
