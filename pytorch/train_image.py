@@ -3,7 +3,6 @@ import re
 import os
 import os.path as osp
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,12 +11,7 @@ import loss
 import pre_process as prep
 from torch.utils.data import DataLoader
 import lr_schedule
-import data_list
 from data_list import ImageList
-from torch.autograd import Variable
-import random
-import pdb
-import math
 from tqdm import tqdm
 import logging
 from myfunc import set_determinism, set_logger
@@ -71,16 +65,6 @@ def _get_start_epoch(config):
         return 0
     max_iter_file = max(file_names, key=lambda name: int(re.search(r'iter_(\d+)_model.pth.tar', name).group(1)))
     max_iter_number = int(re.search(r'iter_(\d+)_model.pth.tar', max_iter_file).group(1))
-    # with open(os.path.join(config["output_path"], 'log.txt'), 'r') as f:
-    #     lines = f.readlines()
-    #     for line in lines[::-1]:
-    #         try:
-    #             if 'iter' in line:
-    #                 start_epoch = int(re.search(r'iter: (\d+)', line).group(1))
-    #                 start_epoch += 1
-    #                 break
-    #         except:
-    #             start_epoch = 0
     return max_iter_number
 
 def train(config):
@@ -160,7 +144,6 @@ def train(config):
     ## train   
     len_train_source = len(dset_loaders["source"])
     len_train_target = len(dset_loaders["target"])
-    transfer_loss_value = classifier_loss_value = total_loss_value = 0.0
     best_acc = 0.0
     start_epoch = 0
 
@@ -273,7 +256,8 @@ if __name__ == "__main__":
     config = {}
     config['method'] = args.method
     config["gpu"] = args.gpu_id
-    config["num_iterations"] = 70004
+    # config["num_iterations"] = 70004
+    config["num_iterations"] = 35004
     config["test_interval"] = args.test_interval
     config["snapshot_interval"] = args.snapshot_interval
     config["resume"] = args.resume

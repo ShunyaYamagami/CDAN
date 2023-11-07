@@ -109,10 +109,15 @@ function process_args {
         elif [[ $dset_num == *"_"* ]]; then  # アンダーラインが含まれているかチェック
             # アンダーラインで文字列を分割
             IFS='_' read -r -a dset_num_list <<< "$dset_num"
-            for num in "${dset_num_list[@]}"; do
-                dset=${dsetlist[$num]}
+            if [[ $dsetlist[0] =~ ^[0-9]+$ ]]; then
+                for num in "${dset_num_list[@]}"; do
+                    dset=${dsetlist[$num]}
+                    COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval  $resume"
+                done
+            else
+                dset=$dset_num
                 COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval  $resume"
-            done
+            fi
         else
             dset=${dsetlist[$dset_num]}
             COMMAND+=" && python train_image.py  "$method"  --gpu_id $gpu_i  --net ResNet50  --dataset $parent  --dset $dset  --task $tsk  --test_interval $test_interval  $resume"
